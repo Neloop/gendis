@@ -4,9 +4,7 @@
 
 int main(void)
 {
-    printf("Hello World!\n");
-
-    huffman_coding("in", "out");
+    huffman_coding("./huffman_testing_data/simple.in", "result.out");
 
     return 0;
 }
