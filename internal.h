@@ -6,6 +6,12 @@
 
 #include "shared.h"
 
+
+/**
+ * @brief handshake
+ * @param con
+ * @return 0 if handshake was succesful
+ */
 int handshake(connection_info *con);
 
 /**

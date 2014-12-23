@@ -18,33 +18,51 @@ int main(int argc, char ** argv)
     hint.ai_family = AF_UNSPEC;
     hint.ai_socktype = SOCK_STREAM;
 
-    //while(1)
+    while(1)
     {
+        int newsock;
+        char server_name[STRING_LENGTH] = { 0 };
         char numhost[NI_MAXHOST];
         socklen_t sz = sizeof(servers.remote_connections[servers.count - 1].remote_addr);
 
-        servers.remote_connections[servers.count].name = "localhost";
+        printf("Enter name of remote worker server or \"done\" to move on:\n");
+        scanf("%s", server_name);
+
+        if(strcmp(server_name, "done") == 0)
+        {
+            if(servers.count == 0)
+            {
+                printf("There are no connections, try that again:\n");
+                continue;
+            }
+            break;
+        }
+
+        strcpy(servers.remote_connections[servers.count].name, server_name);
         servers.count++;
 
-        getaddrinfo(servers.remote_connections[servers.count - 1].name, DEFAULT_PORT, &hint, &resorig);
+        if(getaddrinfo(server_name, DEFAULT_PORT, &hint, &resorig) != 0)
+        {
+            warn(NULL);
+            continue;
+        }
 
         for(res = resorig; res != NULL; res = res->ai_next)
         {
-            servers.remote_connections[servers.count - 1].fdsock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+            newsock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+            servers.remote_connections[servers.count - 1].fdsock = newsock;
 
-            if(connect(servers.remote_connections[servers.count - 1].fdsock, (struct sockaddr *)res->ai_addr, res->ai_addrlen) == 0)
+            if(connect(newsock, (struct sockaddr *)res->ai_addr, res->ai_addrlen) == 0)
             {
                 memcpy(&servers.remote_connections[servers.count - 1].remote_addr, res->ai_addr, sizeof(*res->ai_addr));
 
-                getnameinfo((struct sockaddr *)&servers.remote_connections[servers.count - 1].remote_addr, sz, numhost, sizeof(numhost), NULL, 0, NI_NUMERICHOST);
+                getnameinfo((struct sockaddr *)&res->ai_addr, sz, numhost, sizeof(numhost), NULL, 0, NI_NUMERICHOST);
                 write(1, "Connected to ", 13);
                 write(1, numhost, strlen(numhost));
                 write(1, "\n", 1);
 
                 if(handshake(&servers.remote_connections[servers.count - 1]) == 0)
-                {
-                    printf("Handshake accomplished.\n");
-                }
+                { printf("Handshake accomplished.\n"); }
                 else
                 {
                     fprintf(stderr, "Server did not accomplish handshake!\n");
@@ -53,6 +71,8 @@ int main(int argc, char ** argv)
 
                 break;
             }
+
+            if(res->ai_next == NULL){ printf("Connection to server was not found. Try it again:\n"); }
         }
 
         freeaddrinfo(resorig);
@@ -60,9 +80,12 @@ int main(int argc, char ** argv)
 
     /* LOADING LIB */
 
-    sleep(10);
+    char lib_name[STRING_LENGTH] = { 0 };
 
-    lib_handle = load_library(LIBRARY);
+    printf("Enter name of library to load:\n");
+    scanf("%s", lib_name);
+
+    lib_handle = load_library(lib_name);
     symbol_run = load_symbol(lib_handle, "run");
 
     if(symbol_run != NULL){ symbol_run(&servers); }

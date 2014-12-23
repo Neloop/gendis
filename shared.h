@@ -12,11 +12,11 @@
 #include <sys/wait.h>
 
 #define DEFAULT_PORT "4369"
-#define DEFAULT_STRING_LENGTH 256
+#define STRING_LENGTH 256
 
 struct connection_info
 {
-    char *name;
+    char name[STRING_LENGTH];
     int fdsock;
     struct sockaddr_storage remote_addr;
 };

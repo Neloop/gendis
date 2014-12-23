@@ -40,10 +40,10 @@ int main(int argc, char ** argv)
         write(1, numhost, strlen(numhost));
         write(1, "\n", 1);
 
-        client.name = numhost;
+        strcpy(client.name, numhost);
 
-        char lib_name[DEFAULT_STRING_LENGTH];
-        char symbol_name[DEFAULT_STRING_LENGTH];
+        char lib_name[STRING_LENGTH];
+        char symbol_name[STRING_LENGTH];
         void *lib_handle;
         void (*symbol_run)(connection_info*);
 
@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
                 {
                     int ret;
                     // load library
-                    if((ret = net_read(&client, &lib_name, DEFAULT_STRING_LENGTH)) == -1)
+                    if((ret = net_read(&client, &lib_name, STRING_LENGTH)) == -1)
                     { err(1, NULL); }
                     else if(ret == 0){ fprintf(stderr, "Connection closed by remote machine.\n"); goto cleanup; }
 
@@ -84,7 +84,7 @@ int main(int argc, char ** argv)
                     net_write(&client, 0, sizeof(int));
 
                     // load symbol
-                    if((ret = net_read(&client, &symbol_name, DEFAULT_STRING_LENGTH)) == -1)
+                    if((ret = net_read(&client, &symbol_name, STRING_LENGTH)) == -1)
                     { err(1, NULL); }
                     else if(ret == 0){ fprintf(stderr, "Connection closed by remote machine.\n"); goto cleanup; }
 
