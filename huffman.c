@@ -131,8 +131,8 @@ static void write_encoded(int fd_input, int fd_output, HuffmanNode *root)
             write(fd_output, &temp, 4);
 
             memmove((char*)buffer, buffer + 32, strlen((char*)buffer) - 32 + 1);
-            memset((char*)buffer + strlen((char*)buffer), 0, MAX_CHAR_COUNT + 1 + 32 - strlen((char*)buffer));
             length = strlen((char*)buffer);
+            memset((char*)buffer + length, 0, MAX_CHAR_COUNT + 1 + 32 - length);
         }
     }
 
@@ -307,7 +307,7 @@ void huffman_coding(char input[], char output[])
 
     count_frequency(fd_input, frequency);
 
-    lseek(fd_input, 0, SEEK_SET); // reset offset in input file
+    if(lseek(fd_input, 0, SEEK_SET) == (off_t)-1){ err(1, "%s", input);     } // reset offset in input file
 
     root = create_tree(frequency);
 
