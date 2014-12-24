@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-//#include "plugin_client.h"
 #include "internal.h"
 
 #define LIBRARY "plugin.so"
@@ -25,10 +24,11 @@ int main(int argc, char ** argv)
         char numhost[NI_MAXHOST];
         socklen_t sz = sizeof(servers.remote_connections[servers.count - 1].remote_addr);
 
-        printf("Enter name of remote worker server or \"done\" to move on:\n");
-        scanf("%s", server_name);
+        printf("Enter name of remote worker server or \"done\" to move on: [done]\n");
+        read_line(stdin->_fileno, server_name, STRING_LENGTH);
+        //scanf("%s", server_name);
 
-        if(strcmp(server_name, "done") == 0)
+        if(strcmp(server_name, "done") == 0 || strlen(server_name) == 0)
         {
             if(servers.count == 0)
             {
@@ -72,7 +72,7 @@ int main(int argc, char ** argv)
                 break;
             }
 
-            if(res->ai_next == NULL){ printf("Connection to server was not found. Try it again:\n"); }
+            if(res->ai_next == NULL){ printf("Connection to server was not found. Try it again:\n"); servers.count--; }
         }
 
         freeaddrinfo(resorig);
@@ -82,16 +82,22 @@ int main(int argc, char ** argv)
 
     char lib_name[STRING_LENGTH] = { 0 };
 
-    printf("Enter name of library to load:\n");
-    scanf("%s", lib_name);
+    while(1)
+    {
+        printf("Enter name of library to load or \"exit\" to stop program: [exit]\n");
+        read_line(stdin->_fileno, lib_name, STRING_LENGTH);
 
-    lib_handle = load_library(lib_name);
-    symbol_run = load_symbol(lib_handle, "run");
+        if(strcmp(lib_name, "exit") == 0 || strlen(lib_name) == 0)
+        { break; }
 
-    if(symbol_run != NULL){ symbol_run(&servers); }
-    else{ printf("Somewhere there was error\nExiting...\n"); }
+        lib_handle = load_library(lib_name);
+        symbol_run = load_symbol(lib_handle, "run_client");
 
-    close_library(lib_handle);
+        if(symbol_run != NULL){ symbol_run(&servers); }
+        else{ printf("Somewhere there was error.\n"); }
+
+        close_library(lib_handle);
+    }
 
 
     /* CLENUP SECTION */

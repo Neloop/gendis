@@ -26,4 +26,6 @@ void* load_symbol(void *lib, char *name);
 
 int close_library(void *lib);
 
+int read_line(int fd, char *buf, size_t count);
+
 #endif // INTERNAL_H

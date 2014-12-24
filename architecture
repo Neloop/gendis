@@ -3,8 +3,6 @@ client		server
 handshake	handshake
 library
 			response (ok, failed)
-symbol
-			response
 
 user defined datas
 

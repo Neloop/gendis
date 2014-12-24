@@ -3,6 +3,6 @@
 
 #include "shared.h"
 
-void run(connection_info *con);
+void run_server(connection_info *con);
 
 #endif // PLUGIN_H

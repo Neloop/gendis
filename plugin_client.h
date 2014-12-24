@@ -3,6 +3,6 @@
 
 #include "shared.h"
 
-void run(network_info *con);
+void run_client(network_info *con);
 
 #endif // PLUGIN_H

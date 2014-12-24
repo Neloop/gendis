@@ -43,7 +43,6 @@ int main(int argc, char ** argv)
         strcpy(client.name, numhost);
 
         char lib_name[STRING_LENGTH];
-        char symbol_name[STRING_LENGTH];
         void *lib_handle;
         void (*symbol_run)(connection_info*);
 
@@ -74,26 +73,22 @@ int main(int argc, char ** argv)
 
                 while(1)
                 {
+                    int net_zero = htonl(0);
                     int ret;
-                    // load library
+                    // load library and symbol
                     if((ret = net_read(&client, &lib_name, STRING_LENGTH)) == -1)
                     { err(1, NULL); }
                     else if(ret == 0){ fprintf(stderr, "Connection closed by remote machine.\n"); goto cleanup; }
 
                     lib_handle = load_library(lib_name);
-                    net_write(&client, 0, sizeof(int));
 
-                    // load symbol
-                    if((ret = net_read(&client, &symbol_name, STRING_LENGTH)) == -1)
-                    { err(1, NULL); }
-                    else if(ret == 0){ fprintf(stderr, "Connection closed by remote machine.\n"); goto cleanup; }
+                    symbol_run = load_symbol(lib_handle, "run_server");
 
-                    symbol_run = load_symbol(lib_handle, symbol_name);
-                    net_write(&client, 0, sizeof(int));
+                    net_write(&client, &net_zero, sizeof(int));
 
                     // run symbol
                     if(symbol_run != NULL){ symbol_run(&client); }
-                    else{ printf("Somewhere there was error\nRepeating procedure...\n"); }
+                    else{ printf("Somewhere there was error\nRepeating procedure...\n"); continue; }
                     break;
                 }
 

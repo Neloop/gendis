@@ -30,7 +30,7 @@ struct network_info
 typedef struct connection_info connection_info;
 typedef struct network_info network_info;
 
-int net_load_library(connection_info *con, char *lib_name, char *symbol_name);
+int net_load_library(connection_info *con, char *lib_name);
 
 int net_write(connection_info* con, const void *buf, size_t count);
 
