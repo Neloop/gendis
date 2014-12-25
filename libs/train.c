@@ -124,6 +124,8 @@ void run_server(connection_info *con)
 
     initscr();
 
+    clear();
+
     net_read(con, go, 2);
 
     x = getmaxx(stdscr);
