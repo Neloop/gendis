@@ -125,6 +125,7 @@ void run_server(connection_info *con)
     initscr();
 
     clear();
+    refresh();
 
     net_read(con, go, 2);
 
