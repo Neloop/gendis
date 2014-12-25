@@ -97,9 +97,16 @@ void run_client(network_info *con)
 
     for(i = 0; i < con->count; ++i)
     {
-        int ok;
+        int cont;
 
         net_write(&con->remote_connections[i], "go", 2);
+
+        net_read(&con->remote_connections[i], &cont, sizeof(int));
+    }
+
+    for(i = 0; i < con->count; ++i)
+    {
+        int ok;
 
         net_read(&con->remote_connections[i], &ok, sizeof(int));
     }
@@ -124,6 +131,8 @@ void run_server(connection_info *con)
 
     initscr();
 
+    curs_set(0);
+
     clear();
     refresh();
 
@@ -134,8 +143,6 @@ void run_server(connection_info *con)
     vertical = (y - TRAIN_HEIGHT) / 2;
     horizontal = x;
     horizontal--;
-
-    curs_set(0);
 
     while(horizontal + TRAIN_LENGTH + COAL_LENGTH >= 0)
     {
@@ -155,6 +162,8 @@ void run_server(connection_info *con)
 
         poll(NULL, 0, 100);
     }
+
+    net_write(con, &net_zero, sizeof(int));
 
     net_read(con, end, 3);
 
