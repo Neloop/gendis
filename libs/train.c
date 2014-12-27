@@ -14,9 +14,8 @@ static void my_mvprintw(int y, int x, char *str)
     int length = strlen(str);
     int maxx = getmaxx(stdscr);
 
-    for(i = 0; i < length; ++i)
-    {
-        if(x <= maxx){ mvaddch(y, x, str[i]); }
+    for (i = 0; i < length; ++i) {
+        if (x <= maxx) { mvaddch(y, x, str[i]); }
         ++x;
     }
 }
@@ -34,38 +33,27 @@ static void print_train(int x, int y)
 
 static void print_wheel(int tick, int x, int y)
 {
-    if(tick == 1)
-    {
+    if (tick == 1) {
         my_mvprintw(y, x, "__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__ ");
         my_mvprintw(++y, x, " |/-=|___|=    ||    ||    ||    |_____/~\\___/        ");
         my_mvprintw(++y, x, "  \\_/      \\O=====O=====O=====O_/      \\_/            ");
-    }
-    else if(tick == 2)
-    {
+    } else if (tick == 2) {
         my_mvprintw(y, x, "__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__ ");
         my_mvprintw(++y, x, " |/-=|___|=O=====O=====O=====O   |_____/~\\___/        ");
         my_mvprintw(++y, x, "  \\_/      \\__/  \\__/  \\__/  \\__/      \\_/            ");
-    }
-    else if(tick == 3)
-    {
+    } else if (tick == 3) {
         my_mvprintw(y, x, "__/ =| o |=-O=====O=====O=====O \\ ____Y___________|__ ");
         my_mvprintw(++y, x, " |/-=|___|=    ||    ||    ||    |_____/~\\___/        ");
         my_mvprintw(++y, x, "  \\_/      \\__/  \\__/  \\__/  \\__/      \\_/            ");
-    }
-    else if(tick == 4)
-    {
+    } else if (tick == 4) {
         my_mvprintw(y, x, "__/ =| o |=-~O=====O=====O=====O\\ ____Y___________|__ ");
         my_mvprintw(++y, x, " |/-=|___|=    ||    ||    ||    |_____/~\\___/        ");
         my_mvprintw(++y, x, "  \\_/      \\__/  \\__/  \\__/  \\__/      \\_/            ");
-    }
-    else if(tick == 5)
-    {
+    } else if (tick == 5) {
         my_mvprintw(y, x, "__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__ ");
         my_mvprintw(++y, x, " |/-=|___|=   O=====O=====O=====O|_____/~\\___/        ");
         my_mvprintw(++y, x, "  \\_/      \\__/  \\__/  \\__/  \\__/      \\_/            ");
-    }
-    else
-    {
+    } else {
         my_mvprintw(y, x, "__/ =| o |=-~~\\  /~~\\  /~~\\  /~~\\ ____Y___________|__ ");
         my_mvprintw(++y, x, " |/-=|___|=    ||    ||    ||    |_____/~\\___/        ");
         my_mvprintw(++y, x, "  \\_/      \\_O=====O=====O=====O/      \\_/            ");
@@ -86,40 +74,36 @@ static void print_coal(int x, int y)
     my_mvprintw(++y, x, "    \\_/   \\_/    \\_/   \\_/    ");
 }
 
-void run_client(network_info *con)
+void
+run_client(network_info *con)
 {
     int i;
 
-    for(i = 0; i < con->count; ++i)
-    {
+    for (i = 0; i < con->count; ++i) {
         net_load_library(&con->remote_connections[i], "./libs/train.so");
     }
 
-    for(i = 0; i < con->count; ++i)
-    {
+    for (i = 0; i < con->count; ++i) {
         int cont;
 
         net_write(&con->remote_connections[i], "go", 2);
 
-        net_read(&con->remote_connections[i], &cont, sizeof(int));
+        net_read(&con->remote_connections[i], &cont, sizeof (int));
     }
 
-    for(i = 0; i < con->count; ++i)
-    {
+    for (i = 0; i < con->count; ++i) {
         int ok;
 
-        net_read(&con->remote_connections[i], &ok, sizeof(int));
+        net_read(&con->remote_connections[i], &ok, sizeof (int));
     }
 
-    for(i = 0; i < con->count; ++i)
-    {
+    for (i = 0; i < con->count; ++i) {
         net_write(&con->remote_connections[i], "end", 3);
     }
-
-    return;
 }
 
-void run_server(connection_info *con)
+void
+run_server(connection_info *con)
 {
     int x, y;
     int vertical;
@@ -136,7 +120,7 @@ void run_server(connection_info *con)
     clear();
     refresh();
 
-    net_read(con, go, 2);
+    net_read(con, &go, 2);
 
     x = getmaxx(stdscr);
     y = getmaxy(stdscr);
@@ -144,8 +128,7 @@ void run_server(connection_info *con)
     horizontal = x;
     horizontal--;
 
-    while(horizontal + TRAIN_LENGTH + COAL_LENGTH >= 0)
-    {
+    while (horizontal + TRAIN_LENGTH + COAL_LENGTH >= 0) {
         clear();
 
         print_train(horizontal, vertical);
@@ -153,7 +136,7 @@ void run_server(connection_info *con)
 
         print_coal(horizontal + TRAIN_LENGTH, vertical);
 
-        if(horizontal == -1){ net_write(con, &net_zero, sizeof(int)); }
+        if (horizontal == -1) { net_write(con, &net_zero, sizeof (int)); }
 
         tick = (tick + 1) % 6;
         horizontal--;
@@ -163,11 +146,9 @@ void run_server(connection_info *con)
         poll(NULL, 0, 100);
     }
 
-    net_write(con, &net_zero, sizeof(int));
+    net_write(con, &net_zero, sizeof (int));
 
-    net_read(con, end, 3);
+    net_read(con, &end, 3);
 
     endwin();
-
-    return;
 }

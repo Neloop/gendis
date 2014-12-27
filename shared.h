@@ -13,6 +13,7 @@
 
 #define DEFAULT_PORT "4369"
 #define STRING_LENGTH 256
+#define NET_STRING_LENGTH 32
 
 struct connection_info
 {

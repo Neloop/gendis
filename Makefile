@@ -14,7 +14,7 @@ server: server.c shared.o internal.o
 client: client.c shared.o internal.o
 	$(CC) $(CFLAGS) $(LFLAGS) client.c shared.o internal.o -o client $(LIBS)
 
-train: ./libs/train.c plugin_server.h plugin_client.h
+train: ./libs/train.c plugin_server.h plugin_client.h shared.o
 	$(CC) $(CFLAGS) $(LIBFLAGS) ./libs/train.c shared.o -o ./libs/train.so -lncurses
 
 shared.o: shared.h shared.c
