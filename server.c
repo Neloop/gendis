@@ -50,7 +50,12 @@ main(int argc, char ** argv)
     char numhost[NI_MAXHOST] = { 0 };
     socklen_t sz;
 
+    /* INITIALIZERS */
+
+    con_info_init(&client);
     strcpy(port, DEFAULT_PORT); // loading of recommended default port
+
+    /* PROGRAM */
 
     options(argc, argv);
 
@@ -72,7 +77,6 @@ main(int argc, char ** argv)
         if (res->ai_next == NULL) {
             printf("%s: Creation of socket and binding failed. Exiting...\n", numhost);
             freeaddrinfo(resorig);
-            close(sock);
             exit(1);
         }
     }
@@ -146,6 +150,8 @@ main(int argc, char ** argv)
                     else {
                         printf("%s: Repeating loading library...\n", numhost);
                     }
+
+		    close_library(lib_handle);
                 }
 
                 close(client.fdsock);

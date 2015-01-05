@@ -51,8 +51,12 @@ main(int argc, char ** argv)
     int i, gai_error_code;
     network_info servers;
     struct addrinfo *res, *resorig, hint;
+    
+    /* INITIALIZERS */
+    net_info_init(&servers);
     strcpy(port, DEFAULT_PORT);
 
+    /* PROGRAM */
     options(argc, argv);
 
     memset(&hint, 0, sizeof (hint));
