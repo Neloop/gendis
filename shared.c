@@ -26,3 +26,15 @@ net_load_library(connection_info *con, char *lib_name)
 
     return (0);
 }
+
+int
+net_write_file(connection_info *con, char *name)
+{
+    return 0;
+}
+
+int
+net_read_file(connection_info *con, char *name)
+{
+    return 0;
+}

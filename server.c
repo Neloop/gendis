@@ -49,6 +49,7 @@ main(int argc, char ** argv)
     struct addrinfo *res, *resorig, hint;
     char numhost[NI_MAXHOST] = { 0 };
     socklen_t sz;
+    int optval = 1;
 
     strcpy(port, DEFAULT_PORT); // loading of recommended default port
 
@@ -65,12 +66,27 @@ main(int argc, char ** argv)
 
     }
     for (res = resorig; res != NULL; res = res->ai_next) {
-        sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+        if((sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) {
+            freeaddrinfo(resorig);
+            err(1, "socket");
+        }
+
+        if ((setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (optval)) == -1)) {
+            freeaddrinfo(resorig);
+            close(sock);
+            err(1, "setsockopt");
+        }
+
         if (bind(sock, res->ai_addr, res->ai_addrlen) == 0) {
-            break; }
+            break;
+        } else {
+            freeaddrinfo(resorig);
+            close(sock);
+            err(1, "bind");
+        }
 
         if (res->ai_next == NULL) {
-            printf("%s: Creation of socket and binding failed. Exiting...\n", numhost);
+            printf("Creation of socket and binding failed. Exiting...\n");
             freeaddrinfo(resorig);
             close(sock);
             exit(1);

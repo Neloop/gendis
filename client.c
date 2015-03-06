@@ -51,7 +51,6 @@ main(int argc, char ** argv)
     int i, gai_error_code;
     network_info servers;
     struct addrinfo *res, *resorig, hint;
-    strcpy(port, DEFAULT_PORT);
 
     options(argc, argv);
 
@@ -61,18 +60,33 @@ main(int argc, char ** argv)
 
     while (1) {
         int newsock;
+        char *atpos;
         char server_name[STRING_LENGTH] = { 0 };
         char numhost[NI_MAXHOST] = { 0 };
         socklen_t sz = sizeof (servers.remote_connections[servers.count].remote_addr);
+        strcpy(port, DEFAULT_PORT);
 
-        printf("Enter name of remote worker server or \"done\" to move on: [done]\n");
+        printf("Enter name (ip/name@port) of remote worker server or \"done\" to move on: [done]\n");
         read_line(stdin->_fileno, server_name, STRING_LENGTH);
+
+        atpos = strchr(server_name, '@');
+        if(atpos != NULL)
+        {
+            strcpy(port, atpos + 1);
+            memset(server_name + (atpos - server_name), 0, (server_name + STRING_LENGTH) - atpos);
+        }
 
         if (strcmp(server_name, "done") == 0 || strlen(server_name) == 0) {
             if (servers.count == 0) {
                 printf("There are no connections, try that again:\n");
                 continue;
             }
+            break;
+        }
+
+        if(servers.count >= SOMAXCONN)
+        {
+            printf("Too many servers... Forced continue!\n");
             break;
         }
 
@@ -100,14 +114,15 @@ main(int argc, char ** argv)
                     printf("%s: Handshake accomplished.\n", numhost);
                 } else {
                     fprintf(stderr, "%s: Server did not accomplish handshake!\n", numhost);
-                    servers.count--;
+                    printf("servers.count = %d\n", servers.count);
+                    close(newsock);
                 }
 
                 break;
             }
 
             if (res->ai_next == NULL) {
-                printf("%s: Connection to server was not found. Try it again:\n", numhost);
+                printf("%s: Connection to server was not found. Try it again:\n", server_name);
             }
         }
 
@@ -148,15 +163,4 @@ main(int argc, char ** argv)
     }
 
     return (0);
-
-/*inconsistency:
-    printf("Data inconsistency! Exiting process...\n");
-    goto cleanup;
-
-cleanup:
-    freeaddrinfo(resorig);
-    for (i = 0; i < servers.count; ++i) {
-        close(servers.remote_connections[i].fdsock);
-    }
-    exit(1);*/
 }

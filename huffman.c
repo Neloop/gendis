@@ -287,10 +287,8 @@ huffman_coding(char input[], char output[])
 
     root = create_tree(frequency);
 
-    /*
-     * get_tree(root);
-     * printf("\n");
-     */
+    get_tree(root);
+    printf("\n");
 
     write_header(fd_output);
     write_tree(fd_output, root);

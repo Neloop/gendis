@@ -37,4 +37,20 @@ int net_write(connection_info* con, const void *buf, size_t count);
 
 int net_read(connection_info* con, void *buf, size_t count);
 
+/**
+ * @brief net_write_file
+ * @param con
+ * @param name of file which will be sent to remote host (max 255 chars)
+ * @return 0 on success, 1 on failure, 2 for long name
+ */
+int net_write_file(connection_info *con, char *name);
+
+/**
+ * @brief net_read_file
+ * @param con
+ * @param name - out parameter of name given from remote host (max 255 chars)
+ * @return 0 on success, 1 on failure
+ */
+int net_read_file(connection_info *con, char *name);
+
 #endif // SHARED_H
