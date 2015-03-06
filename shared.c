@@ -1,5 +1,23 @@
 #include "shared.h"
 
+void con_info_init(connection_info *con)
+{
+    memset(con->name, 0, STRING_LENGTH);
+    con->fdsock = 0;
+    memset(&con->remote_addr, 0, sizeof (con->remote_addr));
+}
+
+void net_info_init(network_info *con)
+{
+    int i;
+    con->count = 0;
+    
+    for(i = 0; i < SOMAXCONN; ++i)
+    {
+        con_info_init(&con->remote_connections[i]);
+    }
+}
+
 int
 net_write(connection_info *con, const void *buf, size_t count)
 {

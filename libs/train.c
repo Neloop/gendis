@@ -186,6 +186,8 @@ run_server(connection_info *con)
         poll(NULL, 0, 100);
     }
 
+    clear();
+
     net_write(con, &net_zero, sizeof (int));
 
     net_read(con, &end, 3);

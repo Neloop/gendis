@@ -51,7 +51,12 @@ main(int argc, char ** argv)
     socklen_t sz;
     int optval = 1;
 
+    /* INITIALIZERS */
+
+    con_info_init(&client);
     strcpy(port, DEFAULT_PORT); // loading of recommended default port
+
+    /* PROGRAM */
 
     options(argc, argv);
 
@@ -88,7 +93,6 @@ main(int argc, char ** argv)
         if (res->ai_next == NULL) {
             printf("Creation of socket and binding failed. Exiting...\n");
             freeaddrinfo(resorig);
-            close(sock);
             exit(1);
         }
     }
@@ -162,6 +166,8 @@ main(int argc, char ** argv)
                     else {
                         printf("%s: Repeating loading library...\n", numhost);
                     }
+
+		    close_library(lib_handle);
                 }
 
                 close(client.fdsock);

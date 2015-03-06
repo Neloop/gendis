@@ -52,6 +52,10 @@ main(int argc, char ** argv)
     network_info servers;
     struct addrinfo *res, *resorig, hint;
 
+    /* INITIALIZERS */
+    net_info_init(&servers);
+
+    /* PROGRAM */
     options(argc, argv);
 
     memset(&hint, 0, sizeof (hint));
