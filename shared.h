@@ -7,9 +7,11 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netdb.h>
 #include <err.h>
 #include <sys/wait.h>
+#include<fcntl.h>
 
 #define DEFAULT_PORT "4369"
 #define STRING_LENGTH 256
@@ -44,15 +46,18 @@ int net_read(connection_info* con, void *buf, size_t count);
  * @brief net_write_file
  * @param con
  * @param name of file which will be sent to remote host (max 255 chars)
- * @return 0 on success, 1 on failure, 2 for long name
+ * @param remote_name
+ * @param offset
+ * @param length zero if all file from given offset should be sent
+ * @return 0 on success, 1 file not found or cannot be opened, 2 for long name, 3 remote file problems, 4 for problems with connection
  */
-int net_write_file(connection_info *con, char *name);
+int net_write_file(connection_info *con, char *name, char *remote_name, uint offset, uint length);
 
 /**
  * @brief net_read_file
  * @param con
  * @param name - out parameter of name given from remote host (max 255 chars)
- * @return 0 on success, 1 on failure
+ * @return 0 on success, 1 file cannot be opened, 2 problems with connection
  */
 int net_read_file(connection_info *con, char *name);
 

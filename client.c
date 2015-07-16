@@ -113,7 +113,7 @@ main(int argc, char ** argv)
                         sizeof (numhost), NULL, 0, NI_NUMERICHOST);
                 printf("Connected to %s\n", numhost);
 
-                if (handshake(&servers.remote_connections[servers.count]) == 0) {
+                if (handshake_client(&servers.remote_connections[servers.count]) == 0) {
                     servers.count++;
                     printf("%s: Handshake accomplished.\n", numhost);
                 } else {
@@ -138,7 +138,7 @@ main(int argc, char ** argv)
     char lib_name[STRING_LENGTH] = { 0 };
 
     while (1) {
-        printf("Enter name of library to load or \"exit\" to stop program: [exit]\n");
+        printf("Enter name of library to load (in default ./libs/ folder) or \"exit\" to stop program: [exit]\n");
         read_line(stdin->_fileno, lib_name, STRING_LENGTH);
 
         if (strcmp(lib_name, "exit") == 0 || strlen(lib_name) == 0) {
@@ -150,7 +150,14 @@ main(int argc, char ** argv)
             break;
         }
 
-        lib_handle = load_library(lib_name);
+        if(strlen(basename(lib_name)) > (STRING_LENGTH - 14)){ continue; }
+
+        char lib_name_tmp[STRING_LENGTH] = { 0 };
+        strcpy(lib_name_tmp, "./libs/lib");
+        strcat(lib_name_tmp, basename(lib_name));
+        strcat(lib_name_tmp, ".so");
+
+        lib_handle = load_library(lib_name_tmp);
         symbol_run = load_symbol(lib_handle, "run_client");
 
         if (symbol_run != NULL) { symbol_run(&servers); }

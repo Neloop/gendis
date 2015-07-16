@@ -4,7 +4,24 @@
 #include <stdio.h>
 #include <dlfcn.h>
 
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<unistd.h>
+#include<stdlib.h>
+#include<string.h>
+#include<sys/socket.h>
+#include<netdb.h>
+#include<arpa/inet.h>
+#include<time.h>
+#include<fcntl.h>
+#include<poll.h>
+#include<errno.h>
+#include<libgen.h>
+
 #include "shared.h"
+#include "common.h"
+
+#define HASH_LENGTH 32
 
 
 /**
@@ -12,7 +29,26 @@
  * @param con
  * @return 0 if handshake was succesful
  */
-int handshake(connection_info *con);
+int handshake_client_ext(connection_info *con, int timeout);
+/**
+ * @brief handshake_server
+ * @param con
+ * @return 0 if handshake was succesful
+ */
+int handshake_server_ext(connection_info *con, int timeout);
+
+/**
+ * @brief handshake
+ * @param con
+ * @return 0 if handshake was succesful
+ */
+int handshake_client(connection_info *con);
+/**
+ * @brief handshake_server
+ * @param con
+ * @return 0 if handshake was succesful
+ */
+int handshake_server(connection_info *con);
 
 /**
  * @brief load_library dynamicly load *.so lib using libdl

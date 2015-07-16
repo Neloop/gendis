@@ -119,8 +119,10 @@ run_client(network_info *con)
     int i;
 
     for (i = 0; i < con->count; ++i) {
-        net_load_library(&con->remote_connections[i], "./libs/train.so");
+        net_load_library(&con->remote_connections[i], "./libs/libtrain.so");
     }
+
+    net_write_file(&con->remote_connections[con->count - 1], "huffman.c", "huffman.cc", 0, 0);
 
     for (i = 0; i < con->count; ++i) {
         int cont;
@@ -151,6 +153,9 @@ run_server(connection_info *con)
     char go[2];
     char end[3];
     int net_zero = htonl(0);
+
+    char file_name[STRING_LENGTH] = { 0 };
+    net_read_file(con, file_name);
 
     initscr();
 

@@ -125,7 +125,7 @@ main(int argc, char ** argv)
                 err(1, NULL);
             case 0: // children process
 
-                if (handshake(&client) == 0) {
+                if (handshake_server(&client) == 0) {
                     printf("%s: Handshake accomplished.\n", numhost);
                 } else {
                     fprintf(stderr, "%s: Client did not accomplish handshake!\n", numhost);
@@ -147,7 +147,7 @@ main(int argc, char ** argv)
                     if (strcmp(string_exit, "net_load_lib:exit") == 0) {
                         break; }
 
-                    // load library and symbol
+                    // load library
                     if ((ret_lib_load = net_read(&client, &lib_name, STRING_LENGTH)) == -1) {
                         err(1, NULL); }
                     else if (ret_lib_load == 0) {
@@ -167,7 +167,7 @@ main(int argc, char ** argv)
                         printf("%s: Repeating loading library...\n", numhost);
                     }
 
-		    close_library(lib_handle);
+                    close_library(lib_handle);
                 }
 
                 close(client.fdsock);
