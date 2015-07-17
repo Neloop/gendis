@@ -73,16 +73,21 @@ net_write_file(connection_info *con, char *name, char *remote_name,
         return (1);
     }
 
-    if (length == 0) { // length of file was not specified
-        if ((end_of_file = lseek(fd, 0, SEEK_END)) == -1) {
-            close(fd);
-            return (1);
-        }
-
-        length = end_of_file - offset;
+    if ((end_of_file = lseek(fd, 0, SEEK_END)) == -1) { // find eof
+        close(fd);
+        return (1);
     }
 
-    if (lseek(fd, offset, SEEK_SET) == -1) {
+    if (length == 0) { // length of file was not specified
+        length = end_of_file - offset;
+    }
+    else{ // check if we do not cross boundaries
+        if ((offset + length) > end_of_file) {
+            length = end_of_file - offset;
+        }
+    }
+
+    if (lseek(fd, offset, SEEK_SET) == -1) { // seek to given offset
         close(fd);
         return (1);
     }
@@ -108,13 +113,19 @@ net_write_file(connection_info *con, char *name, char *remote_name,
 
     /* now we can write file to other side */
     while (written_bytes < length) {
-        int read_bytes;
+        int read_bytes = STRING_LENGTH;
         char read_data[STRING_LENGTH] = { 0 };
 
-        if ((read_bytes = read(fd, read_data, STRING_LENGTH)) == -1) {}
+        if ((written_bytes + read_bytes) > length) {
+            read_bytes = length - written_bytes;
+        }
+
+        if ((read_bytes = read(fd, read_data, read_bytes)) == -1) {}
+        else if(read_bytes == 0) break;
 
         net_write(con, &read_data, read_bytes);
         written_bytes += read_bytes;
+        //printf("Written: %d; Read: %d; Length: %d", written_bytes, read_bytes, length);
     }
 
     net_read(con, &response_end, NET_STRING_LENGTH);
@@ -169,3 +180,18 @@ net_read_file(connection_info *con, char *name)
 
     return (0);
 }
+
+int
+read_line(int fd, char *buf, size_t count)
+{
+    int ret = read(fd, buf, count);
+
+    if (ret <= 0) {
+        return (ret);
+    }
+
+    if (buf[ret - 1] == '\n') { buf[ret - 1] = 0; }
+
+    return (--ret);
+}
+

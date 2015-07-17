@@ -92,4 +92,13 @@ int net_write_file(connection_info *con, char *name, char *remote_name,
  */
 int net_read_file(connection_info *con, char *name);
 
+/**
+ * @brief read_line from given file descriptor reads until it reaches newline character or bytes count
+ * @param fd
+ * @param buf
+ * @param count
+ * @return
+ */
+int read_line(int fd, char *buf, size_t count);
+
 #endif // SHARED_H

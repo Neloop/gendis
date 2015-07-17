@@ -273,17 +273,3 @@ close_library(void *lib)
         return (dlclose(lib));
     }
 }
-
-int
-read_line(int fd, char *buf, size_t count)
-{
-    int ret = read(fd, buf, count);
-
-    if (ret <= 0) {
-        return (ret);
-    }
-
-    if (buf[ret - 1] == '\n') { buf[ret - 1] = 0; }
-
-    return (--ret);
-}

@@ -8,11 +8,17 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
+#include <errno.h>
+
+#include "../plugin_client.h"
+#include "../plugin_server.h"
+#include "../shared.h"
 
 
 #define MAX_CHAR_COUNT 256
 
-static int id = 0;
+static int node_id = 0;
 
 struct HuffmanNode
 {
@@ -104,14 +110,11 @@ static void get_codes(HuffmanNode *node, unsigned char temp_code[],
     }
 }
 
-static void write_encoded(int fd_input, int fd_output, HuffmanNode *root)
+static void write_encoded_internal(int fd_input, int fd_output, unsigned char codes[][MAX_CHAR_COUNT + 1])
 {
     int read_ret, length = 0;
     unsigned char character;
     unsigned char buffer[MAX_CHAR_COUNT + 1 + 32] = { 0 };
-    unsigned char codes[MAX_CHAR_COUNT][MAX_CHAR_COUNT + 1] = { { 0 } };
-
-    get_codes(root, (unsigned char *)"", codes);
 
     while ((read_ret = read(fd_input, &character, 1)) != 0) {
         if (read_ret == -1) { err(1, NULL); }
@@ -168,6 +171,15 @@ static void write_encoded(int fd_input, int fd_output, HuffmanNode *root)
     }
 }
 
+static void write_encoded(int fd_input, int fd_output, HuffmanNode *root)
+{
+    unsigned char codes[MAX_CHAR_COUNT][MAX_CHAR_COUNT + 1] = { { 0 } };
+
+    get_codes(root, (unsigned char *)"", codes);
+
+    write_encoded_internal(fd_input, fd_output, codes);
+}
+
 static void get_tree(HuffmanNode *node)
 {
     if (node->left_child != NULL) {
@@ -181,7 +193,7 @@ static HuffmanNode* create_node(unsigned char value, long frequency)
 {
     HuffmanNode* node = (HuffmanNode*)malloc(sizeof (HuffmanNode));
 
-    node->id = id++;
+    node->id = node_id++;
     node->frequency = frequency;
     node->value = value;
     node->left_child = NULL;
@@ -320,6 +332,171 @@ huffman_coding(char input[], char output[])
     delete_tree(root);
 
     // close files
-    if (close(fd_input) == -1) { err(1, "%s", input); };
-    if (close(fd_output) == -1) { err(1, "%s", output); };
+    if (close(fd_input) == -1) { err(1, "%s", input); }
+    if (close(fd_output) == -1) { err(1, "%s", output); }
+}
+
+
+void
+run_client(network_info *con)
+{
+    long frequency[MAX_CHAR_COUNT] = { 0 };
+    HuffmanNode* root;
+    int fd_input, fd_output, file_chunks_count, bytes_per_server;
+    int file_length = 0, i, j;
+    char input[STRING_LENGTH] = { 0 };
+    char input_remote[STRING_LENGTH] = { 0 };
+    char output[STRING_LENGTH] = { 0 };
+    char output_server[STRING_LENGTH] = { 0 };
+    unsigned char codes[MAX_CHAR_COUNT][MAX_CHAR_COUNT + 1] = { { 0 } };
+
+
+    printf("Give name of input file:\n");
+    if (read_line(stdin->_fileno, input, STRING_LENGTH) == -1){
+        printf("Something went wrong (%s).\nExiting...\n", strerror(errno));
+        return;
+    }
+    if ((fd_input = open(input, O_RDONLY)) == -1) {
+        printf("Input file cannot be opened (%s).\nExiting...\n", strerror(errno));
+        return;
+    }
+
+    printf("Give name of output file:\n");
+    if (read_line(stdin->_fileno, output, STRING_LENGTH) == -1){
+        printf("Something went wrong (%s).\nExiting...\n", strerror(errno));
+        return;
+    }
+    if ((fd_output = open(output, O_WRONLY | O_CREAT | O_TRUNC,
+            S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1) {
+        printf("Output file cannot be opened (%s).\nExiting...\n", strerror(errno));
+        close(fd_input);
+        return;
+    }
+
+    if((file_length = lseek(fd_input, 0, SEEK_END)) == -1){
+        close(fd_input);
+        close(fd_output);
+        printf("Something went wrong (%s).\nExiting...\n", strerror(errno));
+        return;
+    }
+
+    if (lseek(fd_input, 0, SEEK_SET) == (off_t)-1) {
+        close(fd_input);
+        close(fd_output);
+        printf("Something went wrong (%s).\nExiting...\n", strerror(errno));
+        return;
+    } // reset offset in input file
+
+
+    count_frequency(fd_input, frequency);
+
+
+    if (lseek(fd_input, 0, SEEK_SET) == (off_t)-1) {
+        close(fd_input);
+        close(fd_output);
+        printf("Something went wrong (%s).\nExiting...\n", strerror(errno));
+        return;
+    } // reset offset in input file
+
+    root = create_tree(frequency);
+
+    write_header(fd_output);
+    write_tree(fd_output, root);
+
+
+    /*
+     * calculate file chunks which will be sent to servers
+     *  and send files to servers
+     */
+    file_chunks_count = con->count;
+    bytes_per_server = file_length / file_chunks_count;
+
+    if ((file_length % file_chunks_count) != 0) { bytes_per_server++; }
+
+    for(i = 0, j = 0; i < file_length; i += bytes_per_server, ++j){
+        net_load_library(&con->remote_connections[j], "./libs/libhuffman.so");
+
+        snprintf(input_remote, STRING_LENGTH, "%s%d", input, j);
+        while(net_write_file(&con->remote_connections[j], input,
+                             input_remote, i, bytes_per_server) == 3){
+            snprintf(input_remote, STRING_LENGTH, "%s%d", input, ++j);
+        }
+    }
+
+
+    /*
+     * send codes generated from tree to servers
+     */
+    get_codes(root, (unsigned char *)"", codes);
+    for(i = 0; i < con->count; ++i){
+        for(j = 0; j < MAX_CHAR_COUNT; ++j){
+            net_write(&con->remote_connections[i], codes[j], MAX_CHAR_COUNT + 1);
+        }
+    }
+
+
+    /*
+     * Get encoded files from server and save it
+     */
+
+
+    close(fd_input);
+    close(fd_output);
+}
+
+void run_server(connection_info *con)
+{
+    int fd_input, fd_output, i;
+    char input[STRING_LENGTH] = { 0 };
+    char output[STRING_LENGTH] = { 0 };
+    unsigned char codes[MAX_CHAR_COUNT][MAX_CHAR_COUNT + 1] = { { 0 } };
+
+
+    /*
+     * Get file to process from client
+     */
+    while(net_read_file(con, input) == 1);
+
+    if ((fd_input = open(input, O_RDONLY)) == -1) {
+        //printf("Input file cannot be opened (%s).\nExiting...\n", strerror(errno));
+        return;
+    }
+
+    strcpy(output, input);
+    strcat(output, ".huffs");
+    if ((fd_output = open(output, O_WRONLY | O_CREAT | O_TRUNC,
+            S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1) {
+        //printf("Output file cannot be opened (%s).\nExiting...\n", strerror(errno));
+        close(fd_input);
+        return;
+    }
+
+
+    /*
+     * Get codes from client
+     */
+    for(i = 0; i < MAX_CHAR_COUNT; ++i){
+        net_read(con, &codes[i], MAX_CHAR_COUNT + 1);
+    }
+
+
+    /*
+     * Encode given file
+     */
+    write_encoded_internal(fd_input, fd_output, codes);
+
+
+    /*
+     * Send encoded file to client
+     */
+
+
+    close(fd_input);
+    close(fd_output);
+
+    /*
+     * Delete temporary files
+     */
+    unlink(input);
+    unlink(output);
 }

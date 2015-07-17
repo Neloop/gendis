@@ -74,13 +74,4 @@ void* load_symbol(void *lib, char *name);
  */
 int close_library(void *lib);
 
-/**
- * @brief read_line from given file descriptor reads until it reaches newline character or bytes count
- * @param fd
- * @param buf
- * @param count
- * @return
- */
-int read_line(int fd, char *buf, size_t count);
-
 #endif // INTERNAL_H
