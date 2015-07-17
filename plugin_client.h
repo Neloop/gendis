@@ -3,6 +3,11 @@
 
 #include "shared.h"
 
+/**
+ * @brief run_client
+ * Defines interface for client side library function
+ * @param con
+ */
 void run_client(network_info *con);
 
 #endif // PLUGIN_H

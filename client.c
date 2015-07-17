@@ -67,17 +67,18 @@ main(int argc, char ** argv)
         char *atpos;
         char server_name[STRING_LENGTH] = { 0 };
         char numhost[NI_MAXHOST] = { 0 };
-        socklen_t sz = sizeof (servers.remote_connections[servers.count].remote_addr);
+        socklen_t sz =
+                sizeof (servers.remote_connections[servers.count].remote_addr);
         strcpy(port, DEFAULT_PORT);
 
         printf("Enter name (ip/name@port) of remote worker server or \"done\" to move on: [done]\n");
         read_line(stdin->_fileno, server_name, STRING_LENGTH);
 
         atpos = strchr(server_name, '@');
-        if(atpos != NULL)
-        {
+        if (atpos != NULL) {
             strcpy(port, atpos + 1);
-            memset(server_name + (atpos - server_name), 0, (server_name + STRING_LENGTH) - atpos);
+            memset(server_name + (atpos - server_name), 0,
+                   (server_name + STRING_LENGTH) - atpos);
         }
 
         if (strcmp(server_name, "done") == 0 || strlen(server_name) == 0) {
@@ -88,24 +89,26 @@ main(int argc, char ** argv)
             break;
         }
 
-        if(servers.count >= SOMAXCONN)
-        {
+        if (servers.count >= SOMAXCONN) {
             printf("Too many servers... Forced continue!\n");
             break;
         }
 
         strcpy(servers.remote_connections[servers.count].name, server_name);
 
-        if ((gai_error_code = getaddrinfo(server_name, port, &hint, &resorig)) != 0) {
+        if ((gai_error_code = getaddrinfo(server_name, port,
+                                          &hint, &resorig)) != 0) {
             printf("client: %s\n", gai_strerror(gai_error_code));
             continue;
         }
 
         for (res = resorig; res != NULL; res = res->ai_next) {
-            newsock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+            newsock = socket(res->ai_family,
+                             res->ai_socktype, res->ai_protocol);
             servers.remote_connections[servers.count].fdsock = newsock;
 
-            if (connect(newsock, (struct sockaddr *)res->ai_addr, res->ai_addrlen) == 0) {
+            if (connect(newsock, (struct sockaddr *)res->ai_addr,
+                        res->ai_addrlen) == 0) {
                 memcpy(&servers.remote_connections[servers.count].remote_addr,
                         res->ai_addr, sizeof (*res->ai_addr));
 
@@ -113,11 +116,14 @@ main(int argc, char ** argv)
                         sizeof (numhost), NULL, 0, NI_NUMERICHOST);
                 printf("Connected to %s\n", numhost);
 
-                if (handshake_client(&servers.remote_connections[servers.count]) == 0) {
+                if (handshake_client(&servers.remote_connections[servers.count])
+                        == 0) {
                     servers.count++;
                     printf("%s: Handshake accomplished.\n", numhost);
                 } else {
-                    fprintf(stderr, "%s: Server did not accomplish handshake!\n", numhost);
+                    fprintf(stderr,
+                            "%s: Server did not accomplish handshake!\n",
+                            numhost);
                     printf("servers.count = %d\n", servers.count);
                     close(newsock);
                 }
@@ -126,7 +132,8 @@ main(int argc, char ** argv)
             }
 
             if (res->ai_next == NULL) {
-                printf("%s: Connection to server was not found. Try it again:\n", server_name);
+                printf("%s: Connection to server was not found. Try it again:\n",
+                       server_name);
             }
         }
 
@@ -150,7 +157,10 @@ main(int argc, char ** argv)
             break;
         }
 
-        if(strlen(basename(lib_name)) > (STRING_LENGTH - 14)){ continue; }
+        if (strlen(basename(lib_name)) > (STRING_LENGTH - 14)) {
+            printf("Library name too long. Repeating...\n");
+            continue;
+        }
 
         char lib_name_tmp[STRING_LENGTH] = { 0 };
         strcpy(lib_name_tmp, "./libs/lib");

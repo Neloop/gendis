@@ -22,40 +22,40 @@ static void my_mvprintw(int y, int x, char *str)
 
 /* Copy from original sl and slightly modified */
 static void print_smoke(int x, int y)
-#define SMOKEPTNS	16
+#define SMOKEPTNS 16
 {
     static struct smokes {
     int y, x;
     int ptrn, kind;
     } S[1000];
     static int sum = 0;
-    static char *Smoke[2][SMOKEPTNS]
-    = {{"(   )", "(    )", "(    )", "(   )", "(  )",
-        "(  )" , "( )"   , "( )"   , "()"   , "()"  ,
-        "O"    , "O"     , "O"     , "O"    , "O"   ,
-        " "                                          },
-       {"(@@@)", "(@@@@)", "(@@@@)", "(@@@)", "(@@)",
-        "(@@)" , "(@)"   , "(@)"   , "@@"   , "@@"  ,
-        "@"    , "@"     , "@"     , "@"    , "@"   ,
-        " "                                          }};
+    static char *Smoke[2][SMOKEPTNS] =
+        { { "(   )", "(    )", "(    )", "(   )", "(  )",
+            "(  )" , "( )"   , "( )"   , "()"   , "()"  ,
+            "O"    , "O"     , "O"     , "O"    , "O"   ,
+            " " },
+           { "(@@@)", "(@@@@)", "(@@@@)", "(@@@)", "(@@)",
+            "(@@)" , "(@)"   , "(@)"   , "@@"   , "@@"  ,
+            "@"    , "@"     , "@"     , "@"    , "@"   ,
+            " " } };
 
     static int dy[SMOKEPTNS] = { 1,  1, 1, 1, 0, 0, 0, 0, 0, 0,
-                 0,  0, 0, 0, 0, 0             };
+                 0,  0, 0, 0, 0, 0 };
     static int dx[SMOKEPTNS] = {-2, -1, 0, 1, 1, 1, 1, 1, 2, 2,
-                 2,  2, 2, 3, 3, 3             };
+                 2,  2, 2, 3, 3, 3 };
     int i;
 
-    if((x % 1) == 0){
-    for (i = 0; i < sum; ++i) {
-        S[i].y    -= dy[S[i].ptrn];
-        S[i].x    += dx[S[i].ptrn] + 3;
-        S[i].ptrn += (S[i].ptrn < SMOKEPTNS - 1) ? 1 : 0;
-        my_mvprintw(S[i].y, S[i].x, Smoke[S[i].kind][S[i].ptrn]);
-    }
-    my_mvprintw(y, x, Smoke[sum % 2][0]);
-    S[sum].y = y;    S[sum].x = x;
-    S[sum].ptrn = 0; S[sum].kind = sum % 2;
-    sum ++;
+    if ((x % 1) == 0) {
+        for (i = 0; i < sum; ++i) {
+            S[i].y    -= dy[S[i].ptrn];
+            S[i].x    += dx[S[i].ptrn] + 3;
+            S[i].ptrn += (S[i].ptrn < SMOKEPTNS - 1) ? 1 : 0;
+            my_mvprintw(S[i].y, S[i].x, Smoke[S[i].kind][S[i].ptrn]);
+        }
+        my_mvprintw(y, x, Smoke[sum % 2][0]);
+        S[sum].y = y;    S[sum].x = x;
+        S[sum].ptrn = 0; S[sum].kind = sum % 2;
+        sum ++;
     }
 }
 
@@ -122,8 +122,6 @@ run_client(network_info *con)
         net_load_library(&con->remote_connections[i], "./libs/libtrain.so");
     }
 
-    net_write_file(&con->remote_connections[con->count - 1], "huffman.c", "huffman.cc", 0, 0);
-
     for (i = 0; i < con->count; ++i) {
         int cont;
 
@@ -153,9 +151,6 @@ run_server(connection_info *con)
     char go[2];
     char end[3];
     int net_zero = htonl(0);
-
-    char file_name[STRING_LENGTH] = { 0 };
-    net_read_file(con, file_name);
 
     initscr();
 

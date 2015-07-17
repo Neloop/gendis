@@ -33,13 +33,43 @@ struct network_info
 typedef struct connection_info connection_info;
 typedef struct network_info network_info;
 
+/**
+ * @brief con_info_init
+ * Initialize given connection_info structure to default
+ * @param con
+ */
 void con_info_init(connection_info *con);
+/**
+ * @brief net_info_init
+ * Initialize given network_info structure to default
+ * @param con
+ */
 void net_info_init(network_info *con);
 
+/**
+ * @brief net_load_library
+ * @param con
+ * @param lib_name
+ * @return
+ */
 int net_load_library(connection_info *con, char *lib_name);
 
+/**
+ * @brief net_write
+ * @param con
+ * @param buf
+ * @param count
+ * @return
+ */
 int net_write(connection_info* con, const void *buf, size_t count);
 
+/**
+ * @brief net_read
+ * @param con
+ * @param buf
+ * @param count
+ * @return
+ */
 int net_read(connection_info* con, void *buf, size_t count);
 
 /**
@@ -51,7 +81,8 @@ int net_read(connection_info* con, void *buf, size_t count);
  * @param length zero if all file from given offset should be sent
  * @return 0 on success, 1 file not found or cannot be opened, 2 for long name, 3 remote file problems, 4 for problems with connection
  */
-int net_write_file(connection_info *con, char *name, char *remote_name, uint offset, uint length);
+int net_write_file(connection_info *con, char *name, char *remote_name,
+                   uint offset, uint length);
 
 /**
  * @brief net_read_file

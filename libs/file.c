@@ -10,7 +10,8 @@ run_client(network_info *con)
         net_load_library(&con->remote_connections[i], "./libs/libfile.so");
     }
 
-    net_write_file(&con->remote_connections[con->count - 1], "huffman.c", "huffman.cc", 1, 0);
+    net_write_file(&con->remote_connections[con->count - 1],
+            "internal.c", "internal.cc", 1, 0);
 }
 
 void

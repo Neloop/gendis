@@ -71,12 +71,14 @@ main(int argc, char ** argv)
 
     }
     for (res = resorig; res != NULL; res = res->ai_next) {
-        if((sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) == -1) {
+        if ((sock = socket(res->ai_family, res->ai_socktype,
+                          res->ai_protocol)) == -1) {
             freeaddrinfo(resorig);
             err(1, "socket");
         }
 
-        if ((setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (optval)) == -1)) {
+        if ((setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval,
+                        sizeof (optval)) == -1)) {
             freeaddrinfo(resorig);
             close(sock);
             err(1, "setsockopt");
@@ -104,9 +106,11 @@ main(int argc, char ** argv)
         printf("Waiting for connections...\n");
 
         sz = sizeof (client.remote_addr);
-        client.fdsock = accept(sock, (struct sockaddr *)&client.remote_addr, &sz);
+        client.fdsock = accept(sock, (struct sockaddr *)&client.remote_addr,
+                               &sz);
 
-        getnameinfo((struct sockaddr *)&client.remote_addr, sz, numhost, sizeof (numhost), NULL, 0, NI_NUMERICHOST);
+        getnameinfo((struct sockaddr *)&client.remote_addr, sz, numhost,
+                    sizeof (numhost), NULL, 0, NI_NUMERICHOST);
         printf("Connection from %s\n", numhost);
 
         strcpy(client.name, numhost);
@@ -128,7 +132,9 @@ main(int argc, char ** argv)
                 if (handshake_server(&client) == 0) {
                     printf("%s: Handshake accomplished.\n", numhost);
                 } else {
-                    fprintf(stderr, "%s: Client did not accomplish handshake!\n", numhost);
+                    fprintf(stderr,
+                            "%s: Client did not accomplish handshake!\n",
+                            numhost);
                     goto cleanup;
                 }
 
@@ -137,7 +143,8 @@ main(int argc, char ** argv)
                 /*************************************/
 
                 while (1) {
-                    char net_ok[NET_STRING_LENGTH] = "net_load_lib:succesfuly_loaded";
+                    char net_ok[NET_STRING_LENGTH] =
+                            "net_load_lib:succesfuly_loaded";
                     int ret_lib_load;
                     char string_exit[NET_STRING_LENGTH] = { 0 };
 
@@ -148,10 +155,13 @@ main(int argc, char ** argv)
                         break; }
 
                     // load library
-                    if ((ret_lib_load = net_read(&client, &lib_name, STRING_LENGTH)) == -1) {
+                    if ((ret_lib_load = net_read(&client, &lib_name,
+                                                 STRING_LENGTH)) == -1) {
                         err(1, NULL); }
                     else if (ret_lib_load == 0) {
-                        fprintf(stderr, "%s: Connection closed by remote machine.\n", numhost);
+                        fprintf(stderr,
+                                "%s: Connection closed by remote machine.\n",
+                                numhost);
                         goto cleanup;
                     }
 
@@ -187,10 +197,6 @@ main(int argc, char ** argv)
     close(sock);
 
     return (0);
-
-inconsistency:
-    printf("Data inconsistency! Exiting process...\n");
-    goto cleanup;
 
 cleanup:
     close(sock);

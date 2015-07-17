@@ -19,6 +19,9 @@ train: ./libs/train.c plugin_server.h plugin_client.h shared.o
 file: ./libs/file.c plugin_server.h plugin_client.h shared.o
 	$(CC) $(CFLAGS) $(LIBFLAGS) ./libs/file.c shared.o -o ./libs/libfile.so
 
+huffman: ./libs/huffman.c plugin_server.h plugin_client.h shared.o
+	$(CC) $(CFLAGS) $(LIBFLAGS) ./libs/huffman.c shared.o -o ./libs/libhuffman.so
+
 shared.o: shared.h shared.c
 	$(CC) $(CFLAGS) $(OBJFLAGS) shared.c -o $@
 
