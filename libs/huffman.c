@@ -1,4 +1,14 @@
-#include "huffman.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <err.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <stdint.h>
+
 
 #define MAX_CHAR_COUNT 256
 
@@ -73,7 +83,8 @@ static void write_tree(int fd_output, HuffmanNode *root)
     }
 }
 
-static void get_codes(HuffmanNode *node, unsigned char temp_code[], unsigned char codes[][MAX_CHAR_COUNT + 1])
+static void get_codes(HuffmanNode *node, unsigned char temp_code[],
+                      unsigned char codes[][MAX_CHAR_COUNT + 1])
 {
     if (node == NULL) {
         return;
@@ -105,7 +116,9 @@ static void write_encoded(int fd_input, int fd_output, HuffmanNode *root)
     while ((read_ret = read(fd_input, &character, 1)) != 0) {
         if (read_ret == -1) { err(1, NULL); }
 
-        length += snprintf((char *)buffer + length, MAX_CHAR_COUNT + 1 + 32, "%s", codes[(int)character]);
+        length += snprintf((char *)buffer + length,
+                           MAX_CHAR_COUNT + 1 + 32, "%s",
+                           codes[(int)character]);
 
         if (strlen((char *)buffer) > 32) {
             int i;
@@ -117,9 +130,11 @@ static void write_encoded(int fd_input, int fd_output, HuffmanNode *root)
             }
             write(fd_output, &temp, 4);
 
-            memmove((char *)buffer, buffer + 32, strlen((char *)buffer) - 32 + 1);
+            memmove((char *)buffer,
+                    buffer + 32, strlen((char *)buffer) - 32 + 1);
             length = strlen((char *)buffer);
-            memset((char *)buffer + length, 0, MAX_CHAR_COUNT + 1 + 32 - length);
+            memset((char *)buffer + length, 0,
+                   MAX_CHAR_COUNT + 1 + 32 - length);
         }
     }
 
@@ -131,7 +146,8 @@ static void write_encoded(int fd_input, int fd_output, HuffmanNode *root)
             int append = 8 - remainder;
 
             for (i = 0; i < append; ++i) {
-                buff_len += snprintf((char *)buffer + buff_len, MAX_CHAR_COUNT + 1 + 32, "%c", '0');
+                buff_len += snprintf((char *)buffer + buff_len,
+                                     MAX_CHAR_COUNT + 1 + 32, "%c", '0');
             }
         }
 
@@ -186,14 +202,18 @@ static int get_lightest_node(HuffmanNode *nodes[])
         else { if (lightest == -1) { lightest = i; continue; } }
 
         if (nodes[i]->frequency != nodes[lightest]->frequency) {
-            if (nodes[i]->frequency < nodes[lightest]->frequency) { lightest = i; }
+            if (nodes[i]->frequency < nodes[lightest]->frequency) {
+                lightest = i;
+            }
             continue;
         }
-        if (nodes[i]->left_child == NULL && nodes[lightest]->left_child != NULL) {
+        if (nodes[i]->left_child == NULL &&
+                nodes[lightest]->left_child != NULL) {
             lightest = i;
             continue;
         }
-        if (nodes[i]->left_child == NULL && nodes[lightest]->left_child == NULL) {
+        if (nodes[i]->left_child == NULL &&
+                nodes[lightest]->left_child == NULL) {
             if (nodes[i]->value < nodes[i]->value) {
                 lightest = i;
                 continue;
@@ -230,7 +250,8 @@ static HuffmanNode* create_tree(long frequency[MAX_CHAR_COUNT])
         pos = get_lightest_node(nodes);
         HuffmanNode* right = nodes[pos];
 
-        HuffmanNode* newnode = create_node(0, left->frequency + right->frequency);
+        HuffmanNode* newnode = create_node(0,
+                                           left->frequency + right->frequency);
         newnode->left_child = left;
         newnode->right_child = right;
 
@@ -283,7 +304,9 @@ huffman_coding(char input[], char output[])
 
     count_frequency(fd_input, frequency);
 
-    if (lseek(fd_input, 0, SEEK_SET) == (off_t)-1) { err(1, "%s", input); } // reset offset in input file
+    if (lseek(fd_input, 0, SEEK_SET) == (off_t)-1) {
+        err(1, "%s", input);
+    } // reset offset in input file
 
     root = create_tree(frequency);
 

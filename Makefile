@@ -31,5 +31,8 @@ internal.o: internal.h internal.c
 common.o: common.h common.c
 	$(CC) $(CFLAGS) $(OBJFLAGS) common.c -o $@
 
+lines:
+	@cat internal.h plugin_client.h plugin_server.h shared.h ./libs/file.c ./libs/train.c ./libs/huffman.c client.c internal.c server.c shared.c | wc -l
+
 clean:
-	rm -fr *.o gendis server client ./libs/*.so
+	rm -fr *.o server client ./libs/*.so
