@@ -6,7 +6,7 @@
 /**
  * @brief run_server
  * Defines interface for server side library function
- * @param con
+ * @param con Container to client connection
  */
 void run_server(connection_info *con);
 

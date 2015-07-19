@@ -145,6 +145,8 @@ main(int argc, char ** argv)
                 while (1) {
                     char net_ok[NET_STRING_LENGTH] =
                             "net_load_lib:succesfuly_loaded";
+                    char net_err[NET_STRING_LENGTH] =
+                            "net_load_lib:error";
                     int ret_lib_load;
                     char string_exit[NET_STRING_LENGTH] = { 0 };
 
@@ -157,7 +159,9 @@ main(int argc, char ** argv)
                     // load library
                     if ((ret_lib_load = net_read(&client, &lib_name,
                                                  STRING_LENGTH)) == -1) {
-                        err(1, NULL); }
+                        net_write(&client, net_err, NET_STRING_LENGTH);
+                        continue;
+                    }
                     else if (ret_lib_load == 0) {
                         fprintf(stderr,
                                 "%s: Connection closed by remote machine.\n",
@@ -169,7 +173,7 @@ main(int argc, char ** argv)
 
                     symbol_run = load_symbol(lib_handle, "run_server");
 
-                    net_write(&client, &net_ok, NET_STRING_LENGTH);
+                    net_write(&client, net_ok, NET_STRING_LENGTH);
 
                     // run symbol
                     if (symbol_run != NULL) { symbol_run(&client); }

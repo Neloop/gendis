@@ -44,8 +44,11 @@ net_load_library(connection_info *con, char *lib_name)
     net_write(con, lib_name_temp, STRING_LENGTH);
 
     net_read(con, &ret, NET_STRING_LENGTH);
-
-    return (0);
+    if (strcmp(ret, "net_load_lib:succesfuly_loaded") == 0) {
+        return (0);
+    } else {
+        return (1);
+    }
 }
 
 int

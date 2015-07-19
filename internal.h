@@ -70,7 +70,7 @@ void* load_symbol(void *lib, char *name);
 /**
  * @brief close_library close given library handle
  * @param lib
- * @return
+ * @return 0 on succes, non-zero on failure
  */
 int close_library(void *lib);
 

@@ -6,7 +6,7 @@
 /**
  * @brief run_client
  * Defines interface for client side library function
- * @param con
+ * @param con Containter to all server which are connected
  */
 void run_client(network_info *con);
 
