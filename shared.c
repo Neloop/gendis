@@ -80,8 +80,7 @@ net_write_file(connection_info *con, char *name, char *remote_name,
 
     if (length == 0) { // length of file was not specified
         length = end_of_file - offset;
-    }
-    else{ // check if we do not cross boundaries
+    } else { // check if we do not cross boundaries
         if ((offset + length) > end_of_file) {
             length = end_of_file - offset;
         }
@@ -121,11 +120,10 @@ net_write_file(connection_info *con, char *name, char *remote_name,
         }
 
         if ((read_bytes = read(fd, read_data, read_bytes)) == -1) {}
-        else if(read_bytes == 0) break;
+        else if (read_bytes == 0) break;
 
         net_write(con, &read_data, read_bytes);
         written_bytes += read_bytes;
-        //printf("Written: %d; Read: %d; Length: %d", written_bytes, read_bytes, length);
     }
 
     net_read(con, &response_end, NET_STRING_LENGTH);
@@ -194,4 +192,3 @@ read_line(int fd, char *buf, size_t count)
 
     return (--ret);
 }
-
