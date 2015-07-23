@@ -13,21 +13,21 @@
 #include <sys/wait.h>
 #include<fcntl.h>
 
-#define DEFAULT_PORT "4369"
-#define STRING_LENGTH 256
-#define NET_STRING_LENGTH 32
+#define	DEFAULT_PORT	"4369"
+#define	STRING_LENGTH	256
+#define	NET_STRING_LENGTH	32
 
 struct connection_info
 {
-    char name[STRING_LENGTH];
-    int fdsock;
-    struct sockaddr_storage remote_addr;
+	char name[STRING_LENGTH];
+	int fdsock;
+	struct sockaddr_storage remote_addr;
 };
 
 struct network_info
 {
-    int count;
-    struct connection_info remote_connections[SOMAXCONN];
+	int count;
+	struct connection_info remote_connections[SOMAXCONN];
 };
 
 typedef struct connection_info connection_info;
@@ -87,7 +87,7 @@ int net_read(connection_info* con, void *buf, size_t count);
  * @return 0 on success, 1 file not found or cannot be opened, 2 for long name, 3 remote file problems, 4 for problems with connection
  */
 int net_write_file(connection_info *con, char *name, char *remote_name,
-                   uint offset, uint length);
+				   uint offset, uint length);
 
 /**
  * @brief net_read_file

@@ -1,5 +1,5 @@
-#ifndef INTERNAL_H
-#define INTERNAL_H
+#ifndef	INTERNAL_H
+#define	INTERNAL_H
 
 #include <stdio.h>
 #include <dlfcn.h>
@@ -21,7 +21,7 @@
 #include "shared.h"
 #include "common.h"
 
-#define HASH_LENGTH 32
+#define	HASH_LENGTH	32
 
 
 /**
