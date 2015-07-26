@@ -25,7 +25,8 @@ static void options(int argc, char ** argv)
 	};
 
 	while (1) {
-		opt = getopt_long(argc, argv, "hp:", long_options, &option_index);
+		opt = getopt_long(argc, argv, "hp:",
+			long_options, &option_index);
 		if (opt == -1) { break; }
 
 		switch (opt) {
@@ -34,6 +35,7 @@ static void options(int argc, char ** argv)
 			case 'p':
 				strncpy(port, optarg, STRING_LENGTH);
 				break;
+			case '?':
 			default:
 				help(argv[0]);
 				break;
@@ -72,7 +74,7 @@ main(int argc, char ** argv)
 	}
 	for (res = resorig; res != NULL; res = res->ai_next) {
 		if ((sock = socket(res->ai_family, res->ai_socktype,
-						  res->ai_protocol)) == -1) {
+				res->ai_protocol)) == -1) {
 			freeaddrinfo(resorig);
 			err(1, "socket");
 		}
@@ -93,7 +95,8 @@ main(int argc, char ** argv)
 		}
 
 		if (res->ai_next == NULL) {
-			printf("Creation of socket and binding failed. Exiting...\n");
+			printf("Creation of socket and ");
+			printf("binding failed. Exiting...\n");
 			freeaddrinfo(resorig);
 			exit(1);
 		}
@@ -106,14 +109,15 @@ main(int argc, char ** argv)
 		printf("Waiting for connections...\n");
 
 		sz = sizeof (client.remote_addr);
-		client.fdsock = accept(sock, (struct sockaddr *)&client.remote_addr,
-							   &sz);
+		client.fdsock = accept(sock,
+			(struct sockaddr *)&client.remote_addr,
+			&sz);
 
 		getnameinfo((struct sockaddr *)&client.remote_addr, sz, numhost,
-					sizeof (numhost), NULL, 0, NI_NUMERICHOST);
+			sizeof (numhost), NULL, 0, NI_NUMERICHOST);
 		printf("Connection from %s\n", numhost);
 
-		strncpy(client.name, numhost, NI_MAXHOST);
+		strncpy(client.name, numhost, STRING_LENGTH);
 
 		char lib_name[STRING_LENGTH] = { 0 };
 		void *lib_handle;
@@ -128,56 +132,74 @@ main(int argc, char ** argv)
 			case -1: // error in forking
 				err(1, NULL);
 			case 0: // children process
-
 				if (handshake_server(&client) == 0) {
-					printf("%s: Handshake accomplished.\n", numhost);
+					printf("%s: Handshake accomplished.\n",
+						numhost);
 				} else {
 					fprintf(stderr,
-							"%s: Client did not accomplish handshake!\n",
-							numhost);
+						"%s: ", numhost);
+					fprintf(stderr,
+						"Client did not ");
+					fprintf(stderr,
+						"accomplish handshake!\n");
 					goto cleanup;
 				}
 
-				/*************************************/
+				/* ********************************* */
 				/* do all the work which client asks */
-				/*************************************/
+				/* ********************************* */
 
+				char net_ok[NET_STRING_LENGTH] =
+					"net_load_lib:succesfuly_loaded";
+				char net_err[NET_STRING_LENGTH] =
+					"net_load_lib:error";
 				while (1) {
-					char net_ok[NET_STRING_LENGTH] =
-							"net_load_lib:succesfuly_loaded";
-					char net_err[NET_STRING_LENGTH] =
-							"net_load_lib:error";
 					int ret_lib_load;
-					char string_exit[NET_STRING_LENGTH] = { 0 };
+					char string_exit[NET_STRING_LENGTH]
+						= { 0 };
 
-					printf("%s: Waiting for job...\n", numhost);
+					printf("%s: Waiting for job...\n",
+						numhost);
 
-					net_read(&client, &string_exit, NET_STRING_LENGTH);
-					if (strcmp(string_exit, "net_load_lib:exit") == 0) {
+					net_read(&client, &string_exit,
+						NET_STRING_LENGTH);
+					if (strcmp(string_exit,
+							"net_load_lib:exit")
+								== 0) {
 						break; }
 
 					// load library
-					if ((ret_lib_load = net_read(&client, &lib_name,
-												 STRING_LENGTH)) == -1) {
-						net_write(&client, net_err, NET_STRING_LENGTH);
+					if ((ret_lib_load = net_read(&client,
+							&lib_name,
+							STRING_LENGTH)) == -1) {
+						net_write(&client, net_err,
+							NET_STRING_LENGTH);
 						continue;
 					} else if (ret_lib_load == 0) {
 						fprintf(stderr,
-								"%s: Connection closed by remote machine.\n",
-								numhost);
+							"%s: ", numhost);
+						fprintf(stderr,
+							"Connection closed ");
+						fprintf(stderr,
+							"by remote machine.\n");
 						goto cleanup;
 					}
 
 					lib_handle = load_library(lib_name);
 
-					symbol_run = load_symbol(lib_handle, "run_server");
+					symbol_run = load_symbol(lib_handle,
+						"run_server");
 
-					net_write(&client, net_ok, NET_STRING_LENGTH);
+					net_write(&client, net_ok,
+						NET_STRING_LENGTH);
 
 					// run symbol
-					if (symbol_run != NULL) { symbol_run(&client); }
-					else {
-						printf("%s: Repeating loading library...\n", numhost);
+					if (symbol_run != NULL) {
+						symbol_run(&client);
+					} else {
+						printf("%s: ", numhost);
+						printf("Repeating loading");
+						printf(" library...\n");
 					}
 
 					close_library(lib_handle);
@@ -185,7 +207,8 @@ main(int argc, char ** argv)
 
 				close(client.fdsock);
 
-				printf("%s: Connection exited succesfuly.\n", numhost);
+				printf("%s: Connection exited succesfuly.\n",
+					numhost);
 
 				exit(0);
 			default: // parrent process

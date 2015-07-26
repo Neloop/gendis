@@ -7,11 +7,11 @@ LIBS = -ldl -lcrypto
 
 gendis: server client
 
-server: server.c shared.o internal.o common.o
-	$(CC) $(CFLAGS) $(LFLAGS) server.c shared.o internal.o common.o -o server $(LIBS)
+server: server.c shared.o internal.o
+	$(CC) $(CFLAGS) $(LFLAGS) server.c shared.o internal.o -o server $(LIBS)
 
-client: client.c shared.o internal.o common.o
-	$(CC) $(CFLAGS) $(LFLAGS) client.c shared.o internal.o common.o -o client $(LIBS)
+client: client.c shared.o internal.o
+	$(CC) $(CFLAGS) $(LFLAGS) client.c shared.o internal.o -o client $(LIBS)
 
 train: ./libs/train.c plugin_server.h plugin_client.h shared.o
 	$(CC) $(CFLAGS) $(LIBFLAGS) ./libs/train.c shared.o -o ./libs/libtrain.so -lncurses
@@ -27,9 +27,6 @@ shared.o: shared.h shared.c
 
 internal.o: internal.h internal.c
 	$(CC) $(CFLAGS) $(OBJFLAGS) internal.c -o $@
-
-common.o: common.h common.c
-	$(CC) $(CFLAGS) $(OBJFLAGS) common.c -o $@
 
 lines:
 	@cat internal.h plugin_client.h plugin_server.h shared.h ./libs/file.c ./libs/train.c ./libs/huffman.c client.c internal.c server.c shared.c | wc -l

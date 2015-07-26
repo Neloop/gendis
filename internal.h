@@ -19,9 +19,6 @@
 #include<libgen.h>
 
 #include "shared.h"
-#include "common.h"
-
-#define	HASH_LENGTH	32
 
 
 /**

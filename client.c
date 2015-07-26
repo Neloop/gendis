@@ -27,7 +27,9 @@ static void options(int argc, char ** argv)
 	};
 
 	while (1) {
-		opt = getopt_long(argc, argv, "hp:", long_options, &option_index);
+		opt = getopt_long(argc, argv, "hp:",
+			long_options, &option_index);
+
 		if (opt == -1) { break; }
 
 		switch (opt) {
@@ -36,6 +38,7 @@ static void options(int argc, char ** argv)
 			case 'p':
 				strncpy(port, optarg, STRING_LENGTH);
 				break;
+			case '?':
 			default:
 				help(argv[0]);
 				break;
@@ -68,22 +71,25 @@ main(int argc, char ** argv)
 		char server_name[STRING_LENGTH] = { 0 };
 		char numhost[NI_MAXHOST] = { 0 };
 		socklen_t sz =
-				sizeof (servers.remote_connections[servers.count].remote_addr);
+				sizeof (struct sockaddr_storage);
 		strcpy(port, DEFAULT_PORT);
 
-		printf("Enter name (ip/name@port) of remote worker server or \"done\" to move on: [done]\n");
+		printf("Enter name (ip/name@port) of remote worker server");
+		printf(" or \"done\" to move on: [done]\n");
 		read_line(STDIN_FILENO, server_name, STRING_LENGTH);
 
 		atpos = strchr(server_name, '@');
 		if (atpos != NULL) {
 			strncpy(port, atpos + 1, STRING_LENGTH);
 			memset(server_name + (atpos - server_name), 0,
-				   (server_name + STRING_LENGTH) - atpos);
+				(server_name + STRING_LENGTH) - atpos);
 		}
 
-		if (strcmp(server_name, "done") == 0 || strlen(server_name) == 0) {
+		if (strcmp(server_name, "done") == 0 ||
+				strlen(server_name) == 0) {
 			if (servers.count == 0) {
-				printf("There are no connections, try that again:\n");
+				printf("There are no connections,");
+				printf(" try that again:\n");
 				continue;
 			}
 			break;
@@ -94,38 +100,47 @@ main(int argc, char ** argv)
 			break;
 		}
 
-		strncpy(servers.remote_connections[servers.count].name, 
+		strncpy(servers.remote_connections[servers.count].name,
 				server_name, STRING_LENGTH);
 
 		if ((gai_error_code = getaddrinfo(server_name, port,
-										  &hint, &resorig)) != 0) {
+				&hint, &resorig)) != 0) {
 			printf("client: %s\n", gai_strerror(gai_error_code));
 			continue;
 		}
 
 		for (res = resorig; res != NULL; res = res->ai_next) {
+			connection_info *temp_remote;
+			temp_remote =
+				&servers.remote_connections[servers.count];
 			newsock = socket(res->ai_family,
-							 res->ai_socktype, res->ai_protocol);
-			servers.remote_connections[servers.count].fdsock = newsock;
+				res->ai_socktype, res->ai_protocol);
+			servers.remote_connections[servers.count].fdsock
+					= newsock;
 
 			if (connect(newsock, (struct sockaddr *)res->ai_addr,
 						res->ai_addrlen) == 0) {
-				memcpy(&servers.remote_connections[servers.count].remote_addr,
-						res->ai_addr, sizeof (*res->ai_addr));
+				memcpy(&temp_remote->remote_addr,
+						res->ai_addr,
+						sizeof (*res->ai_addr));
 
-				getnameinfo((struct sockaddr *)res->ai_addr, sz, numhost,
-						sizeof (numhost), NULL, 0, NI_NUMERICHOST);
+				getnameinfo((struct sockaddr *)res->ai_addr,
+						sz, numhost,
+						sizeof (numhost), NULL,
+						0, NI_NUMERICHOST);
 				printf("Connected to %s\n", numhost);
 
-				if (handshake_client(&servers.remote_connections[servers.count])
-						== 0) {
+				if (handshake_client(temp_remote) == 0) {
 					servers.count++;
-					printf("%s: Handshake accomplished.\n", numhost);
+					printf("%s: Handshake accomplished.\n",
+						numhost);
 				} else {
 					fprintf(stderr,
-							"%s: Server did not accomplish handshake!\n",
-							numhost);
-					printf("servers.count = %d\n", servers.count);
+							"%s: ", numhost);
+					fprintf(stderr,
+						"Server did not accomplish");
+					fprintf(stderr,
+						" handshake!\n");
 					close(newsock);
 				}
 
@@ -133,8 +148,9 @@ main(int argc, char ** argv)
 			}
 
 			if (res->ai_next == NULL) {
-				printf("%s: Connection to server was not found. Try it again:\n",
-					   server_name);
+				printf("%s: ", server_name);
+				printf("Connection to server was not found.");
+				printf(" Try it again:\n");
 			}
 		}
 
@@ -146,14 +162,16 @@ main(int argc, char ** argv)
 	char lib_name[STRING_LENGTH] = { 0 };
 
 	while (1) {
-		printf("Enter name of library to load (in default ./libs/ folder) or \"exit\" to stop program: [exit]\n");
+		printf("Enter name of library to load ");
+		printf("(in default ./libs/ folder) or ");
+		printf("\"exit\" to stop program: [exit]\n");
 		read_line(STDIN_FILENO, lib_name, STRING_LENGTH);
 
 		if (strcmp(lib_name, "exit") == 0 || strlen(lib_name) == 0) {
 			char ex[NET_STRING_LENGTH] = "net_load_lib:exit";
 			for (i = 0; i < servers.count; ++i) {
 				net_write(&servers.remote_connections[i],
-						  &ex, NET_STRING_LENGTH);
+					&ex, NET_STRING_LENGTH);
 			}
 			break;
 		}
@@ -165,8 +183,9 @@ main(int argc, char ** argv)
 
 		char lib_name_tmp[STRING_LENGTH] = { 0 };
 		strcpy(lib_name_tmp, "./libs/lib");
-		strcat(lib_name_tmp, basename(lib_name));
-		strcat(lib_name_tmp, ".so");
+		strncat(lib_name_tmp, basename(lib_name),
+			strlen(basename(lib_name)));
+		strncat(lib_name_tmp, ".so", 3);
 
 		lib_handle = load_library(lib_name_tmp);
 		symbol_run = load_symbol(lib_handle, "run_client");

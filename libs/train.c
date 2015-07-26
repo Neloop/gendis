@@ -40,9 +40,9 @@ static void print_smoke(int x, int y)
 			" " } };
 
 	static int dy[SMOKEPTNS] = { 1,	 1, 1, 1, 0, 0, 0, 0, 0, 0,
-				 0,	 0, 0, 0, 0, 0 };
+		0,	 0, 0, 0, 0, 0 };
 	static int dx[SMOKEPTNS] = {-2, -1, 0, 1, 1, 1, 1, 1, 2, 2,
-				 2,	 2, 2, 3, 3, 3 };
+		2,	 2, 2, 3, 3, 3 };
 	int i;
 
 	if ((x % 1) == 0) {
@@ -50,7 +50,8 @@ static void print_smoke(int x, int y)
 			S[i].y	  -= dy[S[i].ptrn];
 			S[i].x	  += dx[S[i].ptrn] + 3;
 			S[i].ptrn += (S[i].ptrn < SMOKEPTNS - 1) ? 1 : 0;
-			my_mvprintw(S[i].y, S[i].x, Smoke[S[i].kind][S[i].ptrn]);
+			my_mvprintw(S[i].y, S[i].x,
+				Smoke[S[i].kind][S[i].ptrn]);
 		}
 		my_mvprintw(y, x, Smoke[sum % 2][0]);
 		S[sum].y = y;	 S[sum].x = x;
@@ -119,7 +120,8 @@ run_client(network_info *con)
 	int i;
 
 	for (i = 0; i < con->count; ++i) {
-		net_load_library(&con->remote_connections[i], "./libs/libtrain.so");
+		net_load_library(&con->remote_connections[i],
+			"./libs/libtrain.so");
 	}
 
 	for (i = 0; i < con->count; ++i) {
@@ -176,7 +178,9 @@ run_server(connection_info *con)
 
 		print_coal(horizontal + TRAIN_LENGTH, vertical);
 
-		if (horizontal == -1) { net_write(con, &net_zero, sizeof (int)); }
+		if (horizontal == -1) {
+			net_write(con, &net_zero, sizeof (int));
+		}
 
 		tick = (tick + 1) % 6;
 		horizontal--;

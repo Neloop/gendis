@@ -90,7 +90,7 @@ static void write_tree(int fd_output, HuffmanNode *root)
 }
 
 static void get_codes(HuffmanNode *node, unsigned char temp_code[],
-					  unsigned char codes[][MAX_CHAR_COUNT + 1])
+	unsigned char codes[][MAX_CHAR_COUNT + 1])
 {
 	if (node == NULL) {
 		return;
@@ -102,16 +102,18 @@ static void get_codes(HuffmanNode *node, unsigned char temp_code[],
 	else
 	{
 		unsigned char temp[MAX_CHAR_COUNT + 1] = { 0 };
-		snprintf((char *)temp, MAX_CHAR_COUNT + 1, "%s%c", temp_code, '0');
+		snprintf((char *)temp, MAX_CHAR_COUNT + 1,
+			"%s%c", temp_code, '0');
 		get_codes(node->left_child, temp, codes);
 
-		snprintf((char *)temp, MAX_CHAR_COUNT + 1, "%s%c", temp_code, '1');
+		snprintf((char *)temp, MAX_CHAR_COUNT + 1,
+			"%s%c", temp_code, '1');
 		get_codes(node->right_child, temp, codes);
 	}
 }
 
 static int write_encoded_internal(int fd_input, int fd_output,
-								  unsigned char codes[][MAX_CHAR_COUNT + 1])
+	unsigned char codes[][MAX_CHAR_COUNT + 1])
 {
 	int read_ret, length = 0;
 	unsigned char character;
@@ -122,8 +124,8 @@ static int write_encoded_internal(int fd_input, int fd_output,
 		if (read_ret == -1) { err(1, NULL); }
 
 		length += snprintf((char *)buffer + length,
-						   MAX_CHAR_COUNT + 1 + 32, "%s",
-						   codes[(int)character]);
+			MAX_CHAR_COUNT + 1 + 32, "%s",
+			codes[(int)character]);
 
 		if (strlen((char *)buffer) > 32) {
 			int i;
@@ -136,10 +138,10 @@ static int write_encoded_internal(int fd_input, int fd_output,
 			write(fd_output, &temp, 4);
 
 			memmove((char *)buffer,
-					buffer + 32, strlen((char *)buffer) - 32 + 1);
+				buffer + 32, strlen((char *)buffer) - 32 + 1);
 			length = strlen((char *)buffer);
 			memset((char *)buffer + length, 0,
-				   MAX_CHAR_COUNT + 1 + 32 - length);
+				MAX_CHAR_COUNT + 1 + 32 - length);
 		}
 	}
 
@@ -152,7 +154,7 @@ static int write_encoded_internal(int fd_input, int fd_output,
 
 			for (i = 0; i < append; ++i) {
 				buff_len += snprintf((char *)buffer + buff_len,
-									 MAX_CHAR_COUNT + 1 + 32, "%c", '0');
+					MAX_CHAR_COUNT + 1 + 32, "%c", '0');
 			}
 		}
 
@@ -168,7 +170,8 @@ static int write_encoded_internal(int fd_input, int fd_output,
 
 			memmove(buffer, buffer + 8, buff_len - 8 + 1);
 			buff_len = strlen((char *)buffer);
-			memset(buffer + buff_len, 0, MAX_CHAR_COUNT + 1 + 32 - buff_len);
+			memset(buffer + buff_len, 0,
+				MAX_CHAR_COUNT + 1 + 32 - buff_len);
 		}
 	}
 
@@ -254,7 +257,8 @@ static HuffmanNode* create_tree(long frequency[MAX_CHAR_COUNT])
 
 	for (i = 0; i < MAX_CHAR_COUNT; ++i) {
 		if (frequency[i] != 0) {
-			nodes[count] = create_node((unsigned char)i, frequency[i]);
+			nodes[count] = create_node((unsigned char)i,
+					frequency[i]);
 			count++;
 		}
 	}
@@ -267,7 +271,7 @@ static HuffmanNode* create_tree(long frequency[MAX_CHAR_COUNT])
 		HuffmanNode* right = nodes[pos];
 
 		HuffmanNode* newnode = create_node(0,
-										   left->frequency + right->frequency);
+			left->frequency + right->frequency);
 		newnode->left_child = left;
 		newnode->right_child = right;
 
@@ -357,24 +361,26 @@ run_client(network_info *con)
 
 	printf("Give name of input file:\n");
 	if (read_line(STDIN_FILENO, input, STRING_LENGTH) == -1) {
-		printf("Something went wrong (%s).\nExiting...\n", strerror(errno));
+		printf("Something went wrong (%s).\nExiting...\n",
+			strerror(errno));
 		return;
 	}
 	if ((fd_input = open(input, O_RDONLY)) == -1) {
 		printf("Input file cannot be opened (%s).\nExiting...\n",
-			   strerror(errno));
+			strerror(errno));
 		return;
 	}
 
 	printf("Give name of output file:\n");
 	if (read_line(STDIN_FILENO, output, STRING_LENGTH) == -1) {
-		printf("Something went wrong (%s).\nExiting...\n", strerror(errno));
+		printf("Something went wrong (%s).\nExiting...\n",
+			strerror(errno));
 		return;
 	}
 	if ((fd_output = open(output, O_WRONLY | O_CREAT | O_TRUNC,
 			S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1) {
 		printf("Output file cannot be opened (%s).\nExiting...\n",
-			   strerror(errno));
+			strerror(errno));
 		close(fd_input);
 		return;
 	}
@@ -382,14 +388,16 @@ run_client(network_info *con)
 	if ((file_length = lseek(fd_input, 0, SEEK_END)) == -1) {
 		close(fd_input);
 		close(fd_output);
-		printf("Something went wrong (%s).\nExiting...\n", strerror(errno));
+		printf("Something went wrong (%s).\nExiting...\n",
+			strerror(errno));
 		return;
 	}
 
 	if (lseek(fd_input, 0, SEEK_SET) == (off_t)-1) {
 		close(fd_input);
 		close(fd_output);
-		printf("Something went wrong (%s).\nExiting...\n", strerror(errno));
+		printf("Something went wrong (%s).\nExiting...\n",
+			strerror(errno));
 		return;
 	} // reset offset in input file
 
@@ -400,7 +408,8 @@ run_client(network_info *con)
 	if (lseek(fd_input, 0, SEEK_SET) == (off_t)-1) {
 		close(fd_input);
 		close(fd_output);
-		printf("Something went wrong (%s).\nExiting...\n", strerror(errno));
+		printf("Something went wrong (%s).\nExiting...\n",
+			strerror(errno));
 		return;
 	} // reset offset in input file
 
@@ -420,12 +429,14 @@ run_client(network_info *con)
 	if ((file_length % file_chunks_count) != 0) { bytes_per_server++; }
 
 	for (i = 0, j = 0; i < file_length; i += bytes_per_server, ++j) {
-		net_load_library(&con->remote_connections[j], "./libs/libhuffman.so");
+		net_load_library(&con->remote_connections[j],
+			"./libs/libhuffman.so");
 
 		snprintf(input_remote, STRING_LENGTH, "%s%d", input, j);
 		while (net_write_file(&con->remote_connections[j], input,
-							 input_remote, i, bytes_per_server) == 3) {
-			snprintf(input_remote, STRING_LENGTH, "%s%d", input, ++j);
+				input_remote, i, bytes_per_server) == 3) {
+			snprintf(input_remote, STRING_LENGTH,
+				"%s%d", input, ++j);
 		}
 	}
 
@@ -437,7 +448,7 @@ run_client(network_info *con)
 	for (i = 0; i < con->count; ++i) {
 		for (j = 0; j < MAX_CHAR_COUNT; ++j) {
 			net_write(&con->remote_connections[i],
-					  codes[j], MAX_CHAR_COUNT + 1);
+				codes[j], MAX_CHAR_COUNT + 1);
 		}
 	}
 
@@ -456,23 +467,32 @@ run_client(network_info *con)
 
 		net_read(&con->remote_connections[i], &remainder, sizeof (int));
 
-		while (net_read_file(&con->remote_connections[i], output_server) == 1);
+		while (net_read_file(&con->remote_connections[i],
+				output_server) == 1);
 
 		if ((fd_tmp = open(output_server, O_RDONLY)) == -1) {
-			printf("File from server cannot be opened (%s).\nSkipping it! Result is not valid...\n",
-				   strerror(errno));
+			printf("File from server cannot be opened ");
+			printf("(%s).\nSkipping it! Result is not valid...\n",
+				strerror(errno));
 			continue;
 		}
 		tmp_length = lseek(fd_tmp, 0, SEEK_END);
 		lseek(fd_tmp, 0, SEEK_SET);
 
 		if (remainder_prev == 0) {
-			while ((read_bytes = read(fd_tmp, buff, STRING_LENGTH)) > 0) {
+			while ((read_bytes = read(fd_tmp, buff,
+					STRING_LENGTH)) > 0) {
 				if (ignore_prev_byte != true) {
-					if (write(fd_output, &prev_byte, 1) == -1) { break; }
+					if (write(fd_output, &prev_byte, 1)
+							== -1) {
+						break;
+					}
 				} else { ignore_prev_byte = false; }
 
-				if (write(fd_output, buff, read_bytes - 1) == -1) { break; }
+				if (write(fd_output, buff, read_bytes - 1)
+						== -1) {
+					break;
+				}
 				prev_byte = buff[read_bytes - 1];
 			}
 		} else {
@@ -484,14 +504,21 @@ run_client(network_info *con)
 				total_read_bytes++;
 				tmp_write += (buff_[0] << remainder_prev);
 
-				if (total_read_bytes == tmp_length && remainder != 0 &&
-						(remainder < (8 - remainder_prev))) {
+				if (total_read_bytes == tmp_length &&
+						remainder != 0 &&
+						(remainder <
+							(8 - remainder_prev))) {
 					continue;
 				} else {
-					if (write(fd_output, &tmp_write, 1) == -1) { break; }
+					if (write(fd_output, &tmp_write, 1)
+							== -1) {
+						break;
+					}
 
 					tmp_write = 0;
-					tmp_write += (buff_[0] >> (8 - remainder_prev));
+					tmp_write +=
+						(buff_[0] >>
+							(8 - remainder_prev));
 				}
 			}
 
@@ -532,8 +559,8 @@ run_server(connection_info *con)
 
 	strncpy(output, input, STRING_LENGTH);
 	strncpy(output_remote, input, STRING_LENGTH);
-	strcat(output, ".huffs");
-	strcat(output_remote, ".huffc");
+	strncat(output, ".huffs", 6);
+	strncat(output_remote, ".huffc", 6);
 	if ((fd_output = open(output, O_WRONLY | O_CREAT | O_TRUNC,
 			S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1) {
 		close(fd_input);
@@ -558,15 +585,20 @@ run_server(connection_info *con)
 	/*
 	 * Send remainder and encoded file to client
 	 */
-	i = 0;
+	i = 1000;
 	net_write(con, &remainder, sizeof (int));
-	if (net_write_file(con, output, output_remote, 0, 0) == 3) {
+	while (net_write_file(con, output, output_remote, 0, 0) == 3) {
 		char tmp[STRING_LENGTH] = { 0 };
 		snprintf(tmp, STRING_LENGTH, "%d", i);
 
+		if (strlen(tmp) + strlen(input) >= STRING_LENGTH) {
+			continue;
+		}
+
 		strncpy(output_remote, input, STRING_LENGTH);
-		strcat(output_remote, tmp);
-		strcat(output_remote, ".huffc");
+		strncat(output_remote, tmp, STRING_LENGTH);
+		strncat(output_remote, ".huffc", 6);
+		--i;
 	}
 
 

@@ -53,7 +53,7 @@ net_load_library(connection_info *con, char *lib_name)
 
 int
 net_write_file(connection_info *con, char *name, char *remote_name,
-			   uint offset, uint length)
+	uint offset, uint length)
 {
 	int fd;
 	off_t end_of_file;
@@ -96,14 +96,16 @@ net_write_file(connection_info *con, char *name, char *remote_name,
 
 	net_write(con, remote_filename, STRING_LENGTH);
 		// write filename of newly created remote file
-	net_read(con, &response_name, NET_STRING_LENGTH); // response to filename
+	net_read(con, &response_name, NET_STRING_LENGTH);
+		// response to filename
 
 	if (strcmp(response_name, "net_read_file:ok") != 0) {
 		close(fd);
 		return (3);
 	}
 
-	net_write(con, &length, sizeof (uint)); // write file length to remote host
+	net_write(con, &length, sizeof (uint));
+		// write file length to remote host
 	net_read(con, &response_length, NET_STRING_LENGTH);
 		// response to file length
 
@@ -152,7 +154,7 @@ net_read_file(connection_info *con, char *name)
 	net_read(con, name, STRING_LENGTH);
 
 	if ((fd = open(name, O_CREAT | O_WRONLY | O_EXCL,
-				   S_IRWXU | S_IRUSR)) == -1) {
+			S_IRWXU | S_IRUSR)) == -1) {
 		net_write(con, &error_msg, NET_STRING_LENGTH);
 			// tell other side about error
 		return (1);
