@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -Wall -m64
 LFLAGS = -rdynamic
 OBJFLAGS = -fPIC -c
 LIBFLAGS = -fPIC -shared
