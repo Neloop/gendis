@@ -1,3 +1,15 @@
+/*
+ * CMD line image of train was taken from sl command written by Toyoda Masashi
+ * 
+ * License:
+ *   Copyright 1993,1998,2014 Toyoda Masashi (mtoyoda@acm.org)
+ *   
+ *   Everyone is permitted to do anything on this program including copying,
+ *   modifying, and improving, unless you try to pretend that you wrote it.
+ *   i.e., the above copyright notice has to appear in all copies.
+ *   THE AUTHOR DISCLAIMS ANY RESPONSIBILITY WITH REGARD TO THIS SOFTWARE.
+ */
+
 #include <ncurses.h>
 #include <poll.h>
 
